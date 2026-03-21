@@ -1,0 +1,7 @@
+matched_skills,missing_skills,market_match_score,total_skills,risk
+5,0,0.9,7,low
+4,1,0.8,6,low
+3,2,0.6,5,medium
+2,3,0.4,4,medium
+1,4,0.2,3,high
+0,5,0.1,2,high
