@@ -1,13 +1,18 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer 
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import streamlit as st
+import os
 
 
 @st.cache_resource
 def train_career_model():
 
-    df = pd.read_csv("career_dataset.csv")
+    # 🔥 correct path
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(base_dir, "career_dataset.csv")
+
+    df = pd.read_csv(file_path)
 
     X = df["skills"]
     y = df["role"]
