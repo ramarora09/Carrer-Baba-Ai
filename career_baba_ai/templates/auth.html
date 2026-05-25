@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% if mode == "register" %}Register{% else %}Login{% endif %} - Career Baba AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell">
+      <section class="auth-panel">
+        <div class="brand auth-brand">
+          <span class="brand-mark">CB</span>
+          <div>
+            <strong>Career Baba AI</strong>
+            <small>AI/ML Career Intelligence</small>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <p class="eyebrow">{% if mode == "register" %}Create Account{% else %}Welcome Back{% endif %}</p>
+          <h1>{% if mode == "register" %}Register to continue{% else %}Login to continue{% endif %}</h1>
+        </div>
+
+        {% if error %}
+          <p class="toast-inline">{{ error }}</p>
+        {% endif %}
+
+        <form class="auth-form" method="post" action="/{{ mode }}">
+          {% if mode == "register" %}
+            <label>
+              Name
+              <input name="name" autocomplete="name" required />
+            </label>
+          {% endif %}
+
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="{% if mode == "register" %}new-password{% else %}current-password{% endif %}" required />
+          </label>
+
+          <button class="primary-button" type="submit">
+            {% if mode == "register" %}Create Account{% else %}Login{% endif %}
+          </button>
+        </form>
+
+        <p class="auth-switch">
+          {% if mode == "register" %}
+            Already have an account? <a href="/login">Login</a>
+          {% else %}
+            New here? <a href="/register">Create an account</a>
+          {% endif %}
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

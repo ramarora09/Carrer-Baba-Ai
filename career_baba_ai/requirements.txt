@@ -1,6 +1,6 @@
-streamlit
-pandas
-scikit-learn
-plotly==5.18.0
-PyPDF2
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+python-dotenv
 pdfplumber

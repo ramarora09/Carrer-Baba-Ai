@@ -1,102 +1,102 @@
-# 🚀 Career Baba – AI Career Advisor
+# Career Baba AI
 
-An AI-powered Career Recommendation and Guidance System that analyzes user skills or resumes and provides intelligent career suggestions, skill gap analysis, project recommendations, and a personalized roadmap.
+Career Baba AI is now a Python AI/ML-style web application with a professional custom UI and Gemini-powered career intelligence.
 
----
+It no longer uses CSV datasets or hard-coded role data. User-facing features are generated dynamically from the user's profile, resume text, and Gemini model output.
 
-## 🎯 Features
+## Features
 
-* 📄 Resume Analysis (PDF)
-* 🧠 AI-Based Career Prediction using Machine Learning
-* 🔍 Skill Extraction using NLP
-* 📊 Skill Gap Analysis with Visualization
-* 🧩 Smart Skill Recommendations
-* 🛣️ Personalized Career Roadmap (time-based)
-* 🎯 Career Strategy Engine (based on experience & goals)
-* 💡 Role-based Project Recommendations
-* 🧑‍💻 Manual Career Guidance Mode
+- Professional web UI served by FastAPI
+- Gemini-powered skill extraction
+- Dynamic role matching
+- AI-generated skill gap analysis
+- AI-generated learning roadmap
+- AI-generated portfolio project ideas
+- AI-generated resume feedback
+- AI-generated market insights
+- Optional Gemini Google Search grounding for fresher market information
+- PDF resume upload or resume text paste
+- Local fallback report if no Gemini key is configured
 
----
+## Run Locally
 
-## ⚙️ Tech Stack
-
-* Python
-* Machine Learning (Scikit-learn)
-* NLP (Text Processing)
-* Streamlit (Frontend UI)
-* Pandas & NumPy
-* Plotly
-
----
-
-## 🧠 How It Works
-
-1. User uploads resume or enters skills manually
-2. System extracts skills using NLP
-3. ML model predicts the most suitable career role
-4. Skill gap is identified
-5. System provides:
-
-   * Skills to learn
-   * Project recommendations
-   * Career strategy
-   * Time-based roadmap
-
----
-
-## 📂 Project Structure
-
-career-baba-ai/
-│
-├── app.py
-├── requirements.txt
-│
-├── utils/
-│   ├── manual.py
-│   ├── career_model.py
-│   ├── resume_parser.py
-│   ├── skill_extractor.py
-│   ├── market_analysis.py
-│   ├── role_data.py
-│   ├── recommendation.py
-│   ├── roadmap.py
-│   ├── explainer.py
-│   ├── project_analyzer.py
-│
-├── career_dataset.csv
-├── career_training_data.csv
-├── skill_dataset.csv
-
----
-
-## ▶️ Run Locally
-
+```bash
+cd career_baba_ai
 pip install -r requirements.txt
-streamlit run app.py
+uvicorn app:app --reload
+```
 
----
+Open:
 
-## 🌐 Deployment
+```text
+http://localhost:8000
+```
 
-This project can be deployed using Streamlit Community Cloud.
+## Gemini Setup
 
----
+Create `.env` or set environment variables before running:
 
-## 💡 Future Improvements
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash-lite
+ENABLE_GEMINI_SEARCH=false
+```
 
-* Add LLM-based career guidance
-* Integrate RAG for dynamic suggestions
-* Improve mobile UI
-* Add real-time job data
+Get a Gemini key:
 
----
+```text
+https://aistudio.google.com/app/apikey
+```
 
-## 👨‍💻 Author
+Recommended default:
 
-Ram Prakash Arora
+```bash
+GEMINI_MODEL=gemini-2.5-flash-lite
+```
 
----
+Optional live web grounding:
 
-## ⭐ Support
+```bash
+ENABLE_GEMINI_SEARCH=true
+```
 
-If you like this project, give it a ⭐ on GitHub!
+Keep search grounding off for cheaper/free long use. Turn it on when you want fresher market insights and source links.
+
+## Project Structure
+
+```text
+career_baba_ai/
+  app.py                  # FastAPI web app and API routes
+  requirements.txt
+  templates/
+    index.html            # Professional UI
+  static/
+    styles.css
+    app.js
+  utils/
+    gemini_client.py      # Gemini model calls and fallback
+    resume_parser.py      # PDF text extraction
+```
+
+## Deployment
+
+This is no longer a Next.js project. Deploy it as a Python web app on:
+
+- Render
+- Railway
+- Fly.io
+- Google Cloud Run
+- Azure App Service
+
+Typical start command:
+
+```bash
+uvicorn app:app --host 0.0.0.0 --port $PORT
+```
+
+## Notes
+
+- CSV datasets were removed.
+- Static role maps and rule-based recommendation files were removed.
+- Gemini is the intelligence layer now.
+- The fallback report exists only so the UI still works without an API key.

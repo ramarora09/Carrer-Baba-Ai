@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Career Baba AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">CB</span>
+        <div>
+          <strong>Career Baba AI</strong>
+          <small>AI/ML Career Intelligence</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#profile">Profile</a>
+        <a href="#resume">Resume</a>
+        <a href="#results">AI Report</a>
+      </nav>
+
+      <div class="user-card">
+        <div>
+          <strong>{{ user.name }}</strong>
+          <small>{{ user.email }}</small>
+        </div>
+        <form method="post" action="/logout">
+          <button type="submit">Logout</button>
+        </form>
+      </div>
+
+      <div class="status-card">
+        <span class="status-dot {% if gemini_configured %}online{% endif %}"></span>
+        <div>
+          <strong>{% if gemini_configured %}Gemini Connected{% else %}Gemini Key Missing{% endif %}</strong>
+          <small>Model: {{ gemini_model }}</small>
+          {% if not gemini_configured %}
+            <small>Add GEMINI_API_KEY in project root .env</small>
+          {% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Dynamic AI Career Platform</p>
+          <h1>Turn your skills into a clear career direction.</h1>
+          <p class="hero-copy">
+            Upload a resume or enter your profile. Gemini analyzes your skills, role fit, gaps,
+            market demand, companies, projects, roadmap, and resume improvements in one report.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid two" id="profile">
+        <form class="panel form-panel" id="career-form">
+          <div class="section-head">
+            <p class="eyebrow">Input</p>
+            <h2>Career Profile</h2>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Interest area
+              <input name="interest" placeholder="AI/ML, Web Development, Cybersecurity..." value="AI/ML" />
+            </label>
+            <label>
+              Target role
+              <input name="target_role" placeholder="Data Scientist, AI Engineer, Software Developer..." />
+            </label>
+            <label>
+              Experience level
+              <select name="experience">
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </label>
+            <label>
+              Goal
+              <select name="goal">
+                <option>Internship</option>
+                <option>Job</option>
+                <option>Freelancing</option>
+                <option>Career switch</option>
+              </select>
+            </label>
+            <label>
+              Time available
+              <select name="time_plan">
+                <option>1-2 months</option>
+                <option selected>3-6 months</option>
+                <option>6+ months</option>
+              </select>
+            </label>
+            <label>
+              Current skills
+              <input name="skills" placeholder="python, sql, react, communication..." />
+            </label>
+          </div>
+
+          <label class="wide-field">
+            Projects or background
+            <textarea name="background" placeholder="Briefly describe your projects, education, certificates, or work experience."></textarea>
+          </label>
+
+          <button class="primary-button" type="submit">
+            Generate AI Career Report
+          </button>
+        </form>
+
+        <section class="panel insight-panel">
+          <div class="section-head">
+            <p class="eyebrow">How it works</p>
+            <h2>All features, dynamic answers</h2>
+          </div>
+          <div class="feature-list">
+            <div>
+              <strong>Resume and manual guidance</strong>
+              <p>Use either flow and get the same complete AI career report.</p>
+            </div>
+            <div>
+              <strong>AI role matching and market demand</strong>
+              <p>Roles, demand scores, required skills, and companies are generated per profile.</p>
+            </div>
+            <div>
+              <strong>Skill gap, projects, roadmap</strong>
+              <p>Readiness, learning skills, project ideas, and next steps are personalized by AI.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel" id="resume">
+        <div class="section-head">
+          <p class="eyebrow">Resume</p>
+          <h2>Upload or paste resume</h2>
+        </div>
+        <form id="resume-form" class="resume-grid">
+          <label class="file-box">
+            <span>PDF Resume</span>
+            <input type="file" name="file" accept="application/pdf" />
+          </label>
+          <label>
+            Resume text
+            <textarea name="resume_text" placeholder="Paste resume text here if you do not want to upload a PDF."></textarea>
+          </label>
+          <button class="secondary-button" type="submit">Analyze Resume With AI</button>
+        </form>
+      </section>
+
+      <section id="results" class="results">
+        <div class="empty-state" id="empty-state">
+          <p class="eyebrow">AI Report</p>
+          <h2>Your report will appear here.</h2>
+          <p>Generate a profile or resume analysis to see role fit, skills, roadmap, projects, and next actions.</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" hidden></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
