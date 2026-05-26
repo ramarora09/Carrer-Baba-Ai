@@ -28,14 +28,18 @@ function scoreBar(score = 0) {
 }
 
 async function readApiResponse(response) {
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json")
+    ? await response.json()
+    : { error: await response.text() };
+
   if (response.status === 401) {
     window.location.href = "/login";
     return null;
   }
 
   if (!response.ok) {
-    throw new Error(payload.error || "Request failed");
+    throw new Error(payload.error || `Request failed with status ${response.status}`);
   }
 
   return payload;

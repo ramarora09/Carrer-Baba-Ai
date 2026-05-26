@@ -245,6 +245,7 @@ async def logout():
 
 
 @app.post("/api/analyze")
+@app.post("/api/analyze/")
 async def analyze(request: Request):
     if not _require_user(request):
         return JSONResponse({"error": "Authentication required."}, status_code=401)
@@ -255,6 +256,7 @@ async def analyze(request: Request):
 
 
 @app.post("/api/resume")
+@app.post("/api/resume/")
 async def analyze_resume(
     request: Request,
     file: UploadFile | None = File(default=None),
@@ -297,6 +299,14 @@ async def analyze_resume(
 
     result, ai_used, notice = generate_career_intelligence(payload)
     return JSONResponse({"result": result, "ai_used": ai_used, "notice": notice})
+
+
+@app.get("/api/resume")
+@app.get("/api/resume/")
+async def resume_endpoint_info():
+    return JSONResponse(
+        {"status": "ok", "message": "Use POST /api/resume to analyze a resume."}
+    )
 
 
 @app.get("/api/health")
