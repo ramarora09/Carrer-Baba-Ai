@@ -10,7 +10,8 @@ DEFAULT_MODEL = "gemini-2.5-flash-lite"
 
 
 def gemini_configured():
-    return bool(os.getenv("GEMINI_API_KEY"))
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    return bool(api_key and api_key != "your_gemini_api_key_here")
 
 
 def _extract_json(text):
@@ -140,8 +141,8 @@ def fallback_profile(payload):
 
 def generate_career_intelligence(payload):
     fallback = fallback_profile(payload)
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not gemini_configured():
         return fallback, False, "GEMINI_API_KEY is not configured. Showing local fallback guidance."
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
