@@ -39,7 +39,7 @@ def _extract_json(text):
     return None
 
 
-def fallback_profile(payload):
+def fallback_profile(payload, key_configured=False):
     skills = payload.get("skills", [])
     if isinstance(skills, str):
         skills = [skill.strip().lower() for skill in skills.split(",") if skill.strip()]
@@ -53,7 +53,14 @@ def fallback_profile(payload):
     ]
 
     return {
-        "profile_summary": f"Your profile is being analyzed for {role}. Add a Gemini key for fully dynamic AI results.",
+        "profile_summary": (
+            f"Your profile is being analyzed for {role}. "
+            + (
+                "Gemini responded, but the app could not use the response, so this fallback report is shown."
+                if key_configured
+                else "Add a Gemini key for fully dynamic AI results."
+            )
+        ),
         "detected_skills": skills,
         "market_demand": [
             {
@@ -136,7 +143,7 @@ def fallback_profile(payload):
             "Target internships, junior roles, and freelance projects that match your strongest skills.",
         ],
         "next_actions": [
-            "Add your Gemini API key.",
+            "Retry the analysis with a shorter resume/profile." if key_configured else "Add your Gemini API key.",
             "Paste a complete resume or profile.",
             "Generate a fresh personalized plan.",
         ],
@@ -144,8 +151,8 @@ def fallback_profile(payload):
 
 
 def generate_career_intelligence(payload):
-    fallback = fallback_profile(payload)
     api_key = _get_api_key()
+    fallback = fallback_profile(payload, key_configured=gemini_configured())
     if not gemini_configured():
         return fallback, False, "GEMINI_API_KEY is not configured. Showing local fallback guidance."
 
@@ -252,7 +259,7 @@ Return only valid JSON with exactly this shape:
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
             "temperature": 0.35,
-            "maxOutputTokens": 2400,
+            "maxOutputTokens": 8192,
             "responseMimeType": "application/json",
         },
     }
@@ -285,7 +292,10 @@ Return only valid JSON with exactly this shape:
     )
     parsed = _extract_json(text)
     if not parsed:
-        return fallback, False, "Gemini returned an invalid JSON response. Showing fallback guidance."
+        candidate = data.get("candidates", [{}])[0]
+        finish_reason = candidate.get("finishReason")
+        reason = f" Finish reason: {finish_reason}." if finish_reason else ""
+        return fallback, False, f"Gemini returned an invalid or incomplete JSON response.{reason} Showing fallback guidance."
 
     grounding_chunks = (
         data.get("candidates", [{}])[0]
