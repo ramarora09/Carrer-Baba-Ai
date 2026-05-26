@@ -13,8 +13,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 
-from career_baba_ai.utils.gemini_client import gemini_configured, generate_career_intelligence
-from career_baba_ai.utils.resume_parser import extract_text_from_pdf
+try:
+    from career_baba_ai.utils.gemini_client import gemini_configured, generate_career_intelligence
+    from career_baba_ai.utils.resume_parser import extract_text_from_pdf
+except ModuleNotFoundError:
+    from utils.gemini_client import gemini_configured, generate_career_intelligence
+    from utils.resume_parser import extract_text_from_pdf
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -297,8 +301,12 @@ async def analyze_resume(
 
 @app.get("/api/health")
 async def health():
+    root_env = os.path.join(os.path.dirname(BASE_DIR), ".env")
+    app_env = os.path.join(BASE_DIR, ".env")
     return {
         "status": "ok",
         "gemini_configured": gemini_configured(),
         "model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
+        "env_files_checked": [root_env, app_env],
+        "env_file_found": os.path.exists(root_env) or os.path.exists(app_env),
     }

@@ -21,9 +21,9 @@ It no longer uses CSV datasets or hard-coded role data. User-facing features are
 ## Run Locally
 
 ```bash
-cd career_baba_ai
+cd Career-Baba-Ai
 pip install -r requirements.txt
-uvicorn app:app --reload
+uvicorn career_baba_ai.app:app --reload
 ```
 
 Open:
@@ -34,13 +34,21 @@ http://localhost:8000
 
 ## Gemini Setup
 
-Create `.env` or set environment variables before running:
+Edit the root `.env` file before running:
 
 ```bash
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=paste_your_real_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
 ENABLE_GEMINI_SEARCH=false
 ```
+
+The file to change is:
+
+```text
+Career-Baba-Ai/.env
+```
+
+Do not change `.env.example`; it is only a template.
 
 Get a Gemini key:
 
@@ -67,8 +75,8 @@ Keep search grounding off for cheaper/free long use. Turn it on when you want fr
 ```text
 career_baba_ai/
   app.py                  # FastAPI web app and API routes
-  requirements.txt
   templates/
+    auth.html
     index.html            # Professional UI
   static/
     styles.css
@@ -91,7 +99,7 @@ This is no longer a Next.js project. Deploy it as a Python web app on:
 Typical start command:
 
 ```bash
-uvicorn app:app --host 0.0.0.0 --port $PORT
+uvicorn career_baba_ai.app:app --host 0.0.0.0 --port $PORT
 ```
 
 ## Notes

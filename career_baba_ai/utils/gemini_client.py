@@ -9,8 +9,12 @@ import urllib.request
 DEFAULT_MODEL = "gemini-2.5-flash-lite"
 
 
+def _get_api_key():
+    return os.getenv("GEMINI_API_KEY", "").strip().strip("\"'")
+
+
 def gemini_configured():
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = _get_api_key()
     return bool(api_key and api_key != "your_gemini_api_key_here")
 
 
@@ -141,16 +145,13 @@ def fallback_profile(payload):
 
 def generate_career_intelligence(payload):
     fallback = fallback_profile(payload)
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = _get_api_key()
     if not gemini_configured():
         return fallback, False, "GEMINI_API_KEY is not configured. Showing local fallback guidance."
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{encoded_model}:generateContent?key={api_key}"
-    )
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{encoded_model}:generateContent"
 
     prompt = f"""
 You are Career Baba AI, an AI/ML career intelligence engine.
@@ -262,17 +263,19 @@ Return only valid JSON with exactly this shape:
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key,
+        },
         method="POST",
     )
 
     try:
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with opener.open(request, timeout=45) as response:
+        with urllib.request.urlopen(request, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
-        return fallback, False, f"Gemini request failed. Showing fallback guidance. {detail}"
+        return fallback, False, _format_gemini_error(exc.code, detail)
     except urllib.error.URLError as exc:
         return fallback, False, f"Gemini request failed. Showing fallback guidance. {exc.reason}"
 
@@ -299,3 +302,22 @@ Return only valid JSON with exactly this shape:
         parsed["sources"] = sources[:6]
 
     return parsed, True, None
+
+
+def _format_gemini_error(status_code, detail):
+    message = "Gemini request failed. Showing fallback guidance."
+    parsed = _extract_json(detail)
+    api_message = ""
+    if isinstance(parsed, dict):
+        api_message = parsed.get("error", {}).get("message", "")
+
+    if status_code in (400, 401, 403) and "API key" in api_message:
+        return f"{message} Check GEMINI_API_KEY in your .env file. Gemini says: {api_message}"
+
+    if status_code == 404:
+        return f"{message} Check GEMINI_MODEL in your .env file. Gemini says: {api_message or detail}"
+
+    if status_code == 429:
+        return f"{message} Gemini quota or rate limit was reached. Gemini says: {api_message or detail}"
+
+    return f"{message} Gemini says: {api_message or detail}"
