@@ -267,7 +267,8 @@ Return only valid JSON with exactly this shape:
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=45) as response:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(request, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
