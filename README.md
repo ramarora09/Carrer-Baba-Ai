@@ -1,22 +1,23 @@
 # Career Baba AI
 
-Career Baba AI is now a Python AI/ML-style web application with a professional custom UI and Gemini-powered career intelligence.
+Career Baba AI is a Python AI/ML-style web application with a professional custom UI and a local career intelligence engine.
 
-It no longer uses CSV datasets or hard-coded role data. User-facing features are generated dynamically from the user's profile, resume text, and Gemini model output.
+The core recommendation flow no longer depends on Gemini. It uses local skill extraction, TF-IDF-style role vector matching, readiness scoring, skill-gap analysis, and dynamic roadmap/project generation from the user's profile and resume text. Gemini can still be enabled as an optional language enhancement layer.
 
 ## Features
 
 - Professional web UI served by FastAPI
-- Gemini-powered skill extraction
-- Dynamic role matching
-- AI-generated skill gap analysis
-- AI-generated learning roadmap
-- AI-generated portfolio project ideas
-- AI-generated resume feedback
-- AI-generated market insights
+- Local skill extraction from profile and resume text
+- TF-IDF-style role vector matching
+- Local readiness and skill-gap scoring
+- Dynamic learning roadmap generation
+- Dynamic portfolio project recommendations
+- Resume feedback from local profile signals
+- Market demand scoring from role profiles and skill overlap
+- Optional Gemini enhancement for rewritten report language
 - Optional Gemini Google Search grounding for fresher market information
 - PDF resume upload or resume text paste
-- Local fallback report if no Gemini key is configured
+- Works without a Gemini API key
 
 ## Run Locally
 
@@ -32,13 +33,14 @@ Open:
 http://localhost:8000
 ```
 
-## Gemini Setup
+## Optional Gemini Enhancement
 
-Edit the root `.env` file before running:
+The app works without Gemini. To let Gemini rewrite or enrich the local model's output, edit the root `.env` file:
 
 ```bash
 GEMINI_API_KEY=paste_your_real_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
+ENABLE_GEMINI_ENHANCEMENT=true
 ENABLE_GEMINI_SEARCH=false
 ```
 
@@ -68,7 +70,7 @@ Optional live web grounding:
 ENABLE_GEMINI_SEARCH=true
 ```
 
-Keep search grounding off for cheaper/free long use. Turn it on when you want fresher market insights and source links.
+Keep Gemini enhancement and search grounding off for a fully local AI/ML-style project. Turn them on only when you want hosted LLM language enhancement or fresher sourced market insights.
 
 ## Project Structure
 
@@ -82,7 +84,8 @@ career_baba_ai/
     styles.css
     app.js
   utils/
-    gemini_client.py      # Gemini model calls and fallback
+    local_ml_engine.py    # Local AI/ML-style skill extraction, role ranking, and scoring
+    gemini_client.py      # Optional Gemini enhancement wrapper
     resume_parser.py      # PDF text extraction
 ```
 
@@ -104,7 +107,6 @@ uvicorn career_baba_ai.app:app --host 0.0.0.0 --port $PORT
 
 ## Notes
 
-- CSV datasets were removed.
-- Static role maps and rule-based recommendation files were removed.
-- Gemini is the intelligence layer now.
-- The fallback report exists only so the UI still works without an API key.
+- The local engine is the main intelligence layer.
+- Gemini is optional, not required.
+- The role profiles are currently embedded in Python. For a stronger ML project, move them into a dataset and add evaluation/training notebooks.

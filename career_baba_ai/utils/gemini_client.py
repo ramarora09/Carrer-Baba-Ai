@@ -5,6 +5,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+try:
+    from career_baba_ai.utils.local_ml_engine import generate_local_career_intelligence
+except ModuleNotFoundError:
+    from utils.local_ml_engine import generate_local_career_intelligence
+
 
 DEFAULT_MODEL = "gemini-2.5-flash-lite"
 
@@ -40,121 +45,21 @@ def _extract_json(text):
 
 
 def fallback_profile(payload, key_configured=False):
-    skills = payload.get("skills", [])
-    if isinstance(skills, str):
-        skills = [skill.strip().lower() for skill in skills.split(",") if skill.strip()]
+    return generate_local_career_intelligence(payload)
 
-    role = payload.get("target_role") or payload.get("interest") or "Technology Career"
-    missing = [
-        "portfolio project depth",
-        "interview preparation",
-        "role-specific proof of work",
-        "resume storytelling",
-    ]
 
-    return {
-        "profile_summary": (
-            f"Your profile is being analyzed for {role}. "
-            + (
-                "Gemini responded, but the app could not use the response, so this fallback report is shown."
-                if key_configured
-                else "Add a Gemini key for fully dynamic AI results."
-            )
-        ),
-        "detected_skills": skills,
-        "market_demand": [
-            {
-                "role": role,
-                "demand_score": 70 if skills else 45,
-                "trend": "Add a Gemini key for live AI-ranked demand signals.",
-            },
-            {
-                "role": f"Junior {role}",
-                "demand_score": 62 if skills else 38,
-                "trend": "Entry-level options improve with role-specific projects.",
-            },
-        ],
-        "top_roles": [
-            {
-                "title": role,
-                "fit_score": 70 if skills else 45,
-                "why": "Based on your entered interest and skills.",
-                "growth_signal": "Build proof-of-work projects and refine your resume.",
-            }
-        ],
-        "selected_role": role,
-        "why_this_role": [
-            "This direction matches the interest and skills you entered.",
-            "A complete resume and Gemini API key will make this explanation more precise.",
-        ],
-        "required_skills": skills[:4] + missing[:3],
-        "target_companies": [
-            "Product companies hiring for this role",
-            "Service companies with relevant teams",
-            "Startups building in this domain",
-        ],
-        "skill_gap": {
-            "strong_skills": skills[:6],
-            "missing_skills": missing,
-            "readiness_score": 55 if skills else 25,
-        },
-        "skill_match": {
-            "matched": skills[:6],
-            "missing": missing,
-        },
-        "recommended_skills": missing,
-        "top_career_options": [
-            {"title": role, "fit_score": 70 if skills else 45},
-            {"title": f"Associate {role}", "fit_score": 62 if skills else 36},
-            {"title": "Project-based Internship", "fit_score": 58 if skills else 32},
-        ],
-        "learning_plan": [
-            {
-                "phase": "Foundation",
-                "duration": "2 weeks",
-                "actions": "Revise fundamentals and learn the first missing skill.",
-            },
-            {
-                "phase": "Portfolio",
-                "duration": "4 weeks",
-                "actions": "Build one public, documented project aligned to your target role.",
-            },
-            {
-                "phase": "Interview",
-                "duration": "2 weeks",
-                "actions": "Practice technical questions and prepare project explanations.",
-            },
-        ],
-        "projects": [
-            {
-                "title": "AI Career Portfolio Project",
-                "level": "Intermediate",
-                "description": "Build a deployable project that proves your role-specific skills.",
-                "success_metrics": ["GitHub repo", "live demo", "clear README", "measurable outcome"],
-            }
-        ],
-        "resume_feedback": [
-            "Use role-specific keywords from your target jobs.",
-            "Rewrite project bullets with action, technology, and measurable impact.",
-            "Add public links for GitHub, demo, and portfolio.",
-        ],
-        "market_insights": [
-            "Hiring favors candidates with practical projects and clear communication.",
-            "Target internships, junior roles, and freelance projects that match your strongest skills.",
-        ],
-        "next_actions": [
-            "Retry the analysis with a shorter resume/profile." if key_configured else "Add your Gemini API key.",
-            "Paste a complete resume or profile.",
-            "Generate a fresh personalized plan.",
-        ],
-    }
+def gemini_enhancement_enabled():
+    return os.getenv("ENABLE_GEMINI_ENHANCEMENT", "").lower() == "true"
 
 
 def generate_career_intelligence(payload):
     api_key = _get_api_key()
-    fallback = fallback_profile(payload, key_configured=gemini_configured())
+    fallback = generate_local_career_intelligence(payload)
+    if not gemini_enhancement_enabled():
+        return fallback, False, "Using local AI/ML engine: skill extraction, vector role matching, gap scoring, and roadmap generation."
+
     if not gemini_configured():
-        return fallback, False, "GEMINI_API_KEY is not configured. Showing local fallback guidance."
+        return fallback, False, "Local AI/ML engine used. Gemini enhancement is enabled, but GEMINI_API_KEY is not configured."
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
@@ -184,6 +89,9 @@ Be practical for students, freshers, and early-career professionals.
 
 User payload:
 {json.dumps(payload, indent=2)}
+
+Local model prediction:
+{json.dumps(fallback, indent=2)}
 
 Return only valid JSON with exactly this shape:
 {{
@@ -297,6 +205,8 @@ Return only valid JSON with exactly this shape:
         reason = f" Finish reason: {finish_reason}." if finish_reason else ""
         return fallback, False, f"Gemini returned an invalid or incomplete JSON response.{reason} Showing fallback guidance."
 
+    parsed["engine"] = "local_ml_with_gemini_enhancement"
+
     grounding_chunks = (
         data.get("candidates", [{}])[0]
         .get("groundingMetadata", {})
@@ -311,7 +221,7 @@ Return only valid JSON with exactly this shape:
     if sources:
         parsed["sources"] = sources[:6]
 
-    return parsed, True, None
+    return parsed, True, "Local AI/ML prediction enhanced by Gemini language generation."
 
 
 def _format_gemini_error(status_code, detail):

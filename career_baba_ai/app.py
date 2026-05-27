@@ -14,10 +14,10 @@ from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 
 try:
-    from career_baba_ai.utils.gemini_client import gemini_configured, generate_career_intelligence
+    from career_baba_ai.utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_intelligence
     from career_baba_ai.utils.resume_parser import extract_text_from_pdf
 except ModuleNotFoundError:
-    from utils.gemini_client import gemini_configured, generate_career_intelligence
+    from utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_intelligence
     from utils.resume_parser import extract_text_from_pdf
 
 
@@ -144,6 +144,7 @@ async def home(request: Request):
         name="index.html",
         context={
             "gemini_configured": gemini_configured(),
+            "gemini_enhancement_enabled": gemini_enhancement_enabled(),
             "gemini_model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
             "user": user,
         },
@@ -315,7 +316,9 @@ async def health():
     app_env = os.path.join(BASE_DIR, ".env")
     return {
         "status": "ok",
+        "local_ai_engine": "enabled",
         "gemini_configured": gemini_configured(),
+        "gemini_enhancement_enabled": gemini_enhancement_enabled(),
         "model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
         "env_files_checked": [root_env, app_env],
         "env_file_found": os.path.exists(root_env) or os.path.exists(app_env),

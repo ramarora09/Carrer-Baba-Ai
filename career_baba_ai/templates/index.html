@@ -36,12 +36,12 @@
       </div>
 
       <div class="status-card">
-        <span class="status-dot {% if gemini_configured %}online{% endif %}"></span>
+        <span class="status-dot online"></span>
         <div>
-          <strong>{% if gemini_configured %}Gemini Connected{% else %}Gemini Key Missing{% endif %}</strong>
-          <small>Model: {{ gemini_model }}</small>
-          {% if not gemini_configured %}
-            <small>Add GEMINI_API_KEY in project root .env</small>
+          <strong>Local AI/ML Engine Active</strong>
+          <small>Gemini enhancer: {% if gemini_enhancement_enabled and gemini_configured %}on{% else %}off{% endif %}</small>
+          {% if gemini_enhancement_enabled and not gemini_configured %}
+            <small>Add GEMINI_API_KEY to enable enhancement</small>
           {% endif %}
         </div>
       </div>
@@ -53,8 +53,8 @@
           <p class="eyebrow">Dynamic AI Career Platform</p>
           <h1>Turn your skills into a clear career direction.</h1>
           <p class="hero-copy">
-            Upload a resume or enter your profile. Gemini analyzes your skills, role fit, gaps,
-            market demand, companies, projects, roadmap, and resume improvements in one report.
+            Upload a resume or enter your profile. The local AI/ML engine extracts skills, predicts
+            role fit, scores gaps, estimates demand, and builds a roadmap without depending on an API.
           </p>
         </div>
       </section>
@@ -128,7 +128,7 @@
             </div>
             <div>
               <strong>AI role matching and market demand</strong>
-              <p>Roles, demand scores, required skills, and companies are generated per profile.</p>
+              <p>Roles, demand scores, required skills, and companies are ranked with local model logic.</p>
             </div>
             <div>
               <strong>Skill gap, projects, roadmap</strong>
