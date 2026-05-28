@@ -229,11 +229,7 @@ def generate_career_chat_reply(message, profile=None):
     fallback = generate_local_career_intelligence(profile)
 
     if not gemini_configured():
-        return (
-            "The live AI career advisor is not configured yet. Add a valid Gemini API key on the server "
-            "to enable conversational guidance for users.",
-            False,
-        )
+        return _fallback_chat_reply(message, fallback), False
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
@@ -291,10 +287,9 @@ User question:
         with urllib.request.urlopen(request, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="ignore")
-        return _format_gemini_error(exc.code, detail), False
+        return _fallback_chat_reply(message, fallback), False
     except urllib.error.URLError as exc:
-        return f"Live AI advisor request failed. Please try again. {exc.reason}", False
+        return _fallback_chat_reply(message, fallback), False
 
     text = "".join(
         part.get("text", "")
@@ -304,6 +299,78 @@ User question:
         return "The AI advisor could not generate a useful reply. Please ask again with a little more detail.", False
 
     return text, True
+
+
+def _fallback_chat_reply(message, analysis):
+    selected_role = analysis.get("selected_role", "your target role")
+    detected = analysis.get("detected_skills", [])
+    skill_gap = analysis.get("skill_gap", {})
+    missing = skill_gap.get("missing_skills", [])
+    projects = analysis.get("projects", [])
+    roadmap = analysis.get("learning_plan", [])
+    resume_feedback = analysis.get("resume_feedback", [])
+    lower_message = message.lower()
+
+    if "resume" in lower_message or "cv" in lower_message:
+        focus = resume_feedback[:3] or [
+            "Add measurable project outcomes.",
+            "Use role-specific keywords from the job description.",
+            "Show GitHub, portfolio, deployed demos, or certifications where possible.",
+        ]
+        return _format_lines(
+            "Here is how to improve your resume:",
+            focus,
+            f"Target it toward {selected_role} and keep each project bullet focused on action, technology, and result.",
+        )
+
+    if "project" in lower_message or "portfolio" in lower_message:
+        project = projects[0] if projects else {}
+        title = project.get("title", f"{selected_role} portfolio project")
+        description = project.get("description", "Build one practical project that proves your role-specific skills.")
+        metrics = project.get("success_metrics", ["GitHub repo", "live demo", "clear README"])
+        return _format_lines(
+            f"Build this project first: {title}",
+            [description, *metrics],
+            "One strong finished project is more useful than many unfinished tutorials.",
+        )
+
+    if "learn" in lower_message or "skill" in lower_message or "roadmap" in lower_message:
+        actions = [f"Learn {skill}" for skill in missing[:4]]
+        if not actions:
+            actions = [item.get("actions", "") for item in roadmap if item.get("actions")]
+        return _format_lines(
+            f"For {selected_role}, focus on these next steps:",
+            actions or ["Strengthen your portfolio, interview explanations, and deployment practice."],
+            "After each skill, make a small proof-of-work project so your learning is visible.",
+        )
+
+    if "interview" in lower_message:
+        return _format_lines(
+            f"To prepare for {selected_role} interviews:",
+            [
+                "Prepare a 60-second intro connected to your target role.",
+                "Practice explaining your best project: problem, tools, decisions, result.",
+                f"Revise the missing skills: {', '.join(missing[:3]) if missing else 'role fundamentals and project depth'}.",
+                "Do mock questions every day and write better answers after each attempt.",
+            ],
+            "The goal is to sound practical, not memorized.",
+        )
+
+    strengths = ", ".join(detected[:5]) if detected else "your current profile details"
+    next_skills = ", ".join(missing[:4]) if missing else "portfolio depth and interview practice"
+    return (
+        f"Based on your profile, {selected_role} looks like a strong direction.\n\n"
+        f"Your current signals: {strengths}.\n"
+        f"Next improvement areas: {next_skills}.\n\n"
+        "Best next move: build one role-focused project, update your resume with measurable outcomes, "
+        "and practice explaining your project decisions clearly."
+    )
+
+
+def _format_lines(title, items, closing):
+    clean_items = [str(item).strip() for item in items if str(item).strip()]
+    bullet_text = "\n".join(f"- {item}" for item in clean_items)
+    return f"{title}\n\n{bullet_text}\n\n{closing}"
 
 
 def _format_gemini_error(status_code, detail):
