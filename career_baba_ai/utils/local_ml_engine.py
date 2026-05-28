@@ -218,8 +218,8 @@ def _profile_summary(payload, selected, skills, readiness):
     goal = payload.get("goal") or "career growth"
     skill_text = ", ".join(skills[:5]) if skills else "your current profile inputs"
     return (
-        f"Local Career Baba AI predicts {selected['title']} as your strongest direction for {goal}. "
-        f"The recommendation is based on skill-vector matching, role requirements, resume/background signals, "
+        f"Career Baba AI identifies {selected['title']} as your strongest direction for {goal}. "
+        f"The recommendation is based on your skills, role requirements, resume/background signals, "
         f"and readiness scoring. Current readiness is {readiness}% using signals from {skill_text}."
     )
 
@@ -298,7 +298,7 @@ def _projects_for_role(role_title, missing):
 def _resume_feedback(text, detected_skills):
     feedback = []
     if len(text) < 250:
-        feedback.append("Add more resume/background detail so the local model has stronger signals.")
+        feedback.append("Add more resume/background detail so the advisor has stronger signals.")
     if not re.search(r"\d+%|\d+x|\d+\+", text):
         feedback.append("Add measurable impact such as accuracy, users, response time, cost saved, or project scale.")
     if len(detected_skills) < 4:

@@ -14,10 +14,10 @@ from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 
 try:
-    from career_baba_ai.utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_intelligence
+    from career_baba_ai.utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_chat_reply, generate_career_intelligence
     from career_baba_ai.utils.resume_parser import extract_text_from_pdf
 except ModuleNotFoundError:
-    from utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_intelligence
+    from utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_chat_reply, generate_career_intelligence
     from utils.resume_parser import extract_text_from_pdf
 
 
@@ -254,6 +254,22 @@ async def analyze(request: Request):
     payload = await request.json()
     result, ai_used, notice = generate_career_intelligence(payload)
     return JSONResponse({"result": result, "ai_used": ai_used, "notice": notice})
+
+
+@app.post("/api/chat")
+@app.post("/api/chat/")
+async def career_chat(request: Request):
+    if not _require_user(request):
+        return JSONResponse({"error": "Authentication required."}, status_code=401)
+
+    payload = await request.json()
+    message = str(payload.get("message", "")).strip()
+    profile = payload.get("profile") or {}
+    if not message:
+        return JSONResponse({"error": "Please enter a career question."}, status_code=400)
+
+    reply, ai_used = generate_career_chat_reply(message, profile)
+    return JSONResponse({"reply": reply, "ai_used": ai_used})
 
 
 @app.post("/api/resume")

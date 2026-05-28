@@ -1,5 +1,7 @@
 const careerForm = document.querySelector("#career-form");
 const resumeForm = document.querySelector("#resume-form");
+const chatForm = document.querySelector("#chat-form");
+const chatBox = document.querySelector("#chat-box");
 const results = document.querySelector("#results");
 const toast = document.querySelector("#toast");
 
@@ -27,6 +29,24 @@ function scoreBar(score = 0) {
   return `<div class="score-bar"><span style="width:${Math.min(score || 0, 100)}%"></span></div>`;
 }
 
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function addChatMessage(message, type = "assistant") {
+  const bubble = document.createElement("div");
+  bubble.className = `chat-message ${type}`;
+  bubble.innerHTML = escapeHtml(message).replace(/\n/g, "<br>");
+  chatBox.appendChild(bubble);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return bubble;
+}
+
 async function readApiResponse(response) {
   const contentType = response.headers.get("content-type") || "";
   const payload = contentType.includes("application/json")
@@ -52,17 +72,12 @@ function renderReport(data, aiUsed, notice) {
   const marketDemand = data.market_demand || [];
   const careerOptions = data.top_career_options?.length ? data.top_career_options : topRoles;
   const readiness = skillGap.readiness_score || 0;
-  const reportSource = data.engine === "local_ml_with_gemini_enhancement"
-    ? "Local AI/ML + Gemini enhancer"
-    : "Local AI/ML Engine";
-
   results.innerHTML = `
     <div class="panel">
       <div class="section-head">
-        <p class="eyebrow">${reportSource}</p>
+        <p class="eyebrow">Personalized AI Guidance</p>
         <h2>AI Career Intelligence Report</h2>
       </div>
-      ${notice ? `<p class="toast-inline">${notice}</p>` : ""}
       <p>${data.profile_summary || ""}</p>
     </div>
 
@@ -266,5 +281,40 @@ async function analyzeResume(event) {
   }
 }
 
+async function askCareerAdvisor(event) {
+  event.preventDefault();
+  const input = chatForm.querySelector("input[name='message']");
+  const button = chatForm.querySelector("button");
+  const message = input.value.trim();
+  if (!message) return;
+
+  addChatMessage(message, "user");
+  input.value = "";
+  button.disabled = true;
+  button.textContent = "Thinking...";
+  const pending = addChatMessage("Preparing your answer...", "assistant");
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        profile: formToObject(careerForm),
+      }),
+    });
+    const payload = await readApiResponse(response);
+    if (!payload) return;
+    pending.innerHTML = escapeHtml(payload.reply).replace(/\n/g, "<br>");
+  } catch (error) {
+    pending.remove();
+    showToast(`Could not answer right now: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Ask AI";
+  }
+}
+
 careerForm.addEventListener("submit", analyzeProfile);
 resumeForm.addEventListener("submit", analyzeResume);
+chatForm.addEventListener("submit", askCareerAdvisor);

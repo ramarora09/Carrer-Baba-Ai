@@ -21,6 +21,7 @@
 
       <nav class="nav">
         <a href="#profile">Profile</a>
+        <a href="#chat">Career Chat</a>
         <a href="#resume">Resume</a>
         <a href="#results">AI Report</a>
       </nav>
@@ -38,11 +39,8 @@
       <div class="status-card">
         <span class="status-dot online"></span>
         <div>
-          <strong>Local AI/ML Engine Active</strong>
-          <small>Gemini enhancer: {% if gemini_enhancement_enabled and gemini_configured %}on{% else %}off{% endif %}</small>
-          {% if gemini_enhancement_enabled and not gemini_configured %}
-            <small>Add GEMINI_API_KEY to enable enhancement</small>
-          {% endif %}
+          <strong>AI Career Advisor Active</strong>
+          <small>Personalized guidance ready</small>
         </div>
       </div>
     </aside>
@@ -53,8 +51,8 @@
           <p class="eyebrow">Dynamic AI Career Platform</p>
           <h1>Turn your skills into a clear career direction.</h1>
           <p class="hero-copy">
-            Upload a resume or enter your profile. The local AI/ML engine extracts skills, predicts
-            role fit, scores gaps, estimates demand, and builds a roadmap without depending on an API.
+            Upload a resume or enter your profile to get personalized career guidance, role fit,
+            skill gaps, market direction, projects, and a practical learning roadmap.
           </p>
         </div>
       </section>
@@ -128,7 +126,7 @@
             </div>
             <div>
               <strong>AI role matching and market demand</strong>
-              <p>Roles, demand scores, required skills, and companies are ranked with local model logic.</p>
+              <p>Roles, demand scores, required skills, and companies are ranked from your profile signals.</p>
             </div>
             <div>
               <strong>Skill gap, projects, roadmap</strong>
@@ -136,6 +134,22 @@
             </div>
           </div>
         </section>
+      </section>
+
+      <section class="panel chat-panel" id="chat">
+        <div class="section-head">
+          <p class="eyebrow">Career Chat</p>
+          <h2>Ask the AI advisor</h2>
+        </div>
+        <div class="chat-box" id="chat-box">
+          <div class="chat-message assistant">
+            Ask about your career direction, resume, projects, interviews, learning plan, or job preparation.
+          </div>
+        </div>
+        <form id="chat-form" class="chat-form">
+          <input name="message" placeholder="Example: What should I learn next for a data analyst internship?" autocomplete="off" />
+          <button class="secondary-button" type="submit">Ask AI</button>
+        </form>
       </section>
 
       <section class="panel" id="resume">

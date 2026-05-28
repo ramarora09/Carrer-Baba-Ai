@@ -49,17 +49,17 @@ def fallback_profile(payload, key_configured=False):
 
 
 def gemini_enhancement_enabled():
-    return os.getenv("ENABLE_GEMINI_ENHANCEMENT", "").lower() == "true"
+    return os.getenv("ENABLE_GEMINI_ENHANCEMENT", "true").lower() != "false"
 
 
 def generate_career_intelligence(payload):
     api_key = _get_api_key()
     fallback = generate_local_career_intelligence(payload)
     if not gemini_enhancement_enabled():
-        return fallback, False, "Using local AI/ML engine: skill extraction, vector role matching, gap scoring, and roadmap generation."
+        return fallback, False, "AI guidance generated from your profile signals."
 
     if not gemini_configured():
-        return fallback, False, "Local AI/ML engine used. Gemini enhancement is enabled, but GEMINI_API_KEY is not configured."
+        return fallback, False, "AI guidance generated from your profile signals. Configure GEMINI_API_KEY for richer conversational guidance."
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
@@ -90,7 +90,7 @@ Be practical for students, freshers, and early-career professionals.
 User payload:
 {json.dumps(payload, indent=2)}
 
-Local model prediction:
+Profile signal analysis:
 {json.dumps(fallback, indent=2)}
 
 Return only valid JSON with exactly this shape:
@@ -192,7 +192,7 @@ Return only valid JSON with exactly this shape:
         detail = exc.read().decode("utf-8", errors="ignore")
         return fallback, False, _format_gemini_error(exc.code, detail)
     except urllib.error.URLError as exc:
-        return fallback, False, f"Gemini request failed. Showing fallback guidance. {exc.reason}"
+        return fallback, False, f"Live AI advisor request failed. Guidance was generated from your profile signals. {exc.reason}"
 
     text = "".join(
         part.get("text", "")
@@ -203,9 +203,9 @@ Return only valid JSON with exactly this shape:
         candidate = data.get("candidates", [{}])[0]
         finish_reason = candidate.get("finishReason")
         reason = f" Finish reason: {finish_reason}." if finish_reason else ""
-        return fallback, False, f"Gemini returned an invalid or incomplete JSON response.{reason} Showing fallback guidance."
+        return fallback, False, f"Live AI advisor returned an incomplete response.{reason} Guidance was generated from your profile signals."
 
-    parsed["engine"] = "local_ml_with_gemini_enhancement"
+    parsed["engine"] = "gemini_career_advisor"
 
     grounding_chunks = (
         data.get("candidates", [{}])[0]
@@ -221,11 +221,93 @@ Return only valid JSON with exactly this shape:
     if sources:
         parsed["sources"] = sources[:6]
 
-    return parsed, True, "Local AI/ML prediction enhanced by Gemini language generation."
+    return parsed, True, "AI guidance generated successfully."
+
+
+def generate_career_chat_reply(message, profile=None):
+    profile = profile or {}
+    fallback = generate_local_career_intelligence(profile)
+
+    if not gemini_configured():
+        return (
+            "The live AI career advisor is not configured yet. Add a valid Gemini API key on the server "
+            "to enable conversational guidance for users.",
+            False,
+        )
+
+    model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+    encoded_model = urllib.parse.quote(model, safe="")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{encoded_model}:generateContent"
+
+    prompt = f"""
+You are Career Baba AI, a professional career guidance chatbot for students, freshers, and early-career users.
+
+Answer the user's question directly and practically. Use the profile context when useful. Recommend roles,
+skills, projects, resume improvements, interview preparation, learning resources, or next steps only when they
+fit the question. Keep the answer friendly, specific, and action-oriented.
+
+User profile:
+{json.dumps(profile, indent=2)}
+
+Profile signal analysis:
+{json.dumps(fallback, indent=2)}
+
+User question:
+{message}
+"""
+
+    body = {
+        "systemInstruction": {
+            "parts": [
+                {
+                    "text": (
+                        "Be concise, practical, and supportive. Do not mention internal implementation details. "
+                        "Do not claim guaranteed jobs, salaries, or admissions."
+                    )
+                }
+            ]
+        },
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.45,
+            "maxOutputTokens": 1400,
+        },
+    }
+
+    if os.getenv("ENABLE_GEMINI_SEARCH", "").lower() == "true":
+        body["tools"] = [{"google_search": {}}]
+
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": _get_api_key(),
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=45) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        return _format_gemini_error(exc.code, detail), False
+    except urllib.error.URLError as exc:
+        return f"Live AI advisor request failed. Please try again. {exc.reason}", False
+
+    text = "".join(
+        part.get("text", "")
+        for part in data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+    ).strip()
+    if not text:
+        return "The AI advisor could not generate a useful reply. Please ask again with a little more detail.", False
+
+    return text, True
 
 
 def _format_gemini_error(status_code, detail):
-    message = "Gemini request failed. Showing fallback guidance."
+    message = "Live AI advisor request failed. Guidance was generated from your profile signals."
     parsed = _extract_json(detail)
     api_message = ""
     if isinstance(parsed, dict):
