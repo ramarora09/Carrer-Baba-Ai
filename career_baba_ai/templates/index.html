@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/styles.css?v=3" />
+    <link rel="stylesheet" href="/static/styles.css?v=4" />
   </head>
   <body>
     <aside class="sidebar">
@@ -40,7 +40,7 @@
         <span class="status-dot online"></span>
         <div>
           <strong>AI Career Advisor Active</strong>
-          <small>Personalized guidance ready</small>
+          <small>RAG-powered guidance ready</small>
         </div>
       </div>
     </aside>
@@ -51,7 +51,7 @@
           <p class="eyebrow">Dynamic AI Career Platform</p>
           <h1>Turn your skills into a clear career direction.</h1>
           <p class="hero-copy">
-            Upload a resume or enter your profile to get personalized career guidance, role fit,
+            Upload a resume or enter your profile to get knowledge-grounded career guidance, role fit,
             skill gaps, market direction, projects, and a practical learning roadmap.
           </p>
         </div>
@@ -138,12 +138,13 @@
 
       <section class="panel chat-panel" id="chat">
         <div class="section-head">
-          <p class="eyebrow">Career Chat</p>
+          <p class="eyebrow">RAG Career Chat</p>
           <h2>Ask the AI advisor</h2>
         </div>
         <div class="chat-box" id="chat-box">
           <div class="chat-message assistant">
             Ask about your career direction, resume, projects, interviews, learning plan, or job preparation.
+            Answers are grounded with the Career Baba knowledge base.
           </div>
         </div>
         <form id="chat-form" class="chat-form">
@@ -180,6 +181,6 @@
     </main>
 
     <div class="toast" id="toast" hidden></div>
-    <script src="/static/app.js?v=3"></script>
+    <script src="/static/app.js?v=4"></script>
   </body>
 </html>

@@ -7,8 +7,10 @@ import urllib.request
 
 try:
     from career_baba_ai.utils.local_ml_engine import generate_local_career_intelligence
+    from career_baba_ai.utils.rag_engine import format_rag_context, retrieve_career_context
 except ModuleNotFoundError:
     from utils.local_ml_engine import generate_local_career_intelligence
+    from utils.rag_engine import format_rag_context, retrieve_career_context
 
 
 DEFAULT_MODEL = "gemini-2.5-flash-lite"
@@ -55,11 +57,18 @@ def gemini_enhancement_enabled():
 def generate_career_intelligence(payload):
     api_key = _get_api_key()
     fallback = generate_local_career_intelligence(payload)
+    rag_context = retrieve_career_context(
+        query=f"{payload.get('target_role', '')} {payload.get('interest', '')} {payload.get('goal', '')}",
+        profile=payload,
+        top_k=5,
+    )
     if not gemini_enhancement_enabled():
-        return fallback, False, "AI guidance generated from your profile signals."
+        fallback["rag_sources"] = _rag_sources(rag_context)
+        return fallback, False, "AI guidance generated from your profile signals and career knowledge base."
 
     if not gemini_configured():
-        return fallback, False, "AI guidance generated from your profile signals. Configure GEMINI_API_KEY for richer conversational guidance."
+        fallback["rag_sources"] = _rag_sources(rag_context)
+        return fallback, False, "AI guidance generated from your profile signals and career knowledge base."
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
@@ -92,6 +101,9 @@ User payload:
 
 Profile signal analysis:
 {json.dumps(fallback, indent=2)}
+
+Retrieved career knowledge:
+{format_rag_context(rag_context)}
 
 Return only valid JSON with exactly this shape:
 {{
@@ -149,7 +161,13 @@ Return only valid JSON with exactly this shape:
   ],
   "resume_feedback": ["string"],
   "market_insights": ["string"],
-  "next_actions": ["string"]
+  "next_actions": ["string"],
+  "rag_sources": [
+    {{
+      "title": "string",
+      "category": "string"
+    }}
+  ]
 }}
 """
 
@@ -206,6 +224,7 @@ Return only valid JSON with exactly this shape:
         return fallback, False, f"Live AI advisor returned an incomplete response.{reason} Guidance was generated from your profile signals."
 
     parsed["engine"] = "gemini_career_advisor"
+    parsed["rag_sources"] = _rag_sources(rag_context)
 
     grounding_chunks = (
         data.get("candidates", [{}])[0]
@@ -227,9 +246,10 @@ Return only valid JSON with exactly this shape:
 def generate_career_chat_reply(message, profile=None):
     profile = profile or {}
     fallback = generate_local_career_intelligence(profile)
+    rag_context = retrieve_career_context(query=message, profile=profile, top_k=5)
 
     if not gemini_configured():
-        return _fallback_chat_reply(message, fallback), False
+        return _fallback_chat_reply(message, fallback, rag_context), False
 
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     encoded_model = urllib.parse.quote(model, safe="")
@@ -247,6 +267,9 @@ User profile:
 
 Profile signal analysis:
 {json.dumps(fallback, indent=2)}
+
+Retrieved career knowledge:
+{format_rag_context(rag_context)}
 
 User question:
 {message}
@@ -287,9 +310,9 @@ User question:
         with urllib.request.urlopen(request, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        return _fallback_chat_reply(message, fallback), False
+        return _fallback_chat_reply(message, fallback, rag_context), False
     except urllib.error.URLError as exc:
-        return _fallback_chat_reply(message, fallback), False
+        return _fallback_chat_reply(message, fallback, rag_context), False
 
     text = "".join(
         part.get("text", "")
@@ -301,7 +324,8 @@ User question:
     return text, True
 
 
-def _fallback_chat_reply(message, analysis):
+def _fallback_chat_reply(message, analysis, rag_context=None):
+    rag_context = rag_context or []
     selected_role = analysis.get("selected_role", "your target role")
     detected = analysis.get("detected_skills", [])
     skill_gap = analysis.get("skill_gap", {})
@@ -320,7 +344,10 @@ def _fallback_chat_reply(message, analysis):
         return _format_lines(
             "Here is how to improve your resume:",
             focus,
-            f"Target it toward {selected_role} and keep each project bullet focused on action, technology, and result.",
+            _closing_with_source(
+                f"Target it toward {selected_role} and keep each project bullet focused on action, technology, and result.",
+                rag_context,
+            ),
         )
 
     if "project" in lower_message or "portfolio" in lower_message:
@@ -331,7 +358,10 @@ def _fallback_chat_reply(message, analysis):
         return _format_lines(
             f"Build this project first: {title}",
             [description, *metrics],
-            "One strong finished project is more useful than many unfinished tutorials.",
+            _closing_with_source(
+                "One strong finished project is more useful than many unfinished tutorials.",
+                rag_context,
+            ),
         )
 
     if "learn" in lower_message or "skill" in lower_message or "roadmap" in lower_message:
@@ -341,7 +371,10 @@ def _fallback_chat_reply(message, analysis):
         return _format_lines(
             f"For {selected_role}, focus on these next steps:",
             actions or ["Strengthen your portfolio, interview explanations, and deployment practice."],
-            "After each skill, make a small proof-of-work project so your learning is visible.",
+            _closing_with_source(
+                "After each skill, make a small proof-of-work project so your learning is visible.",
+                rag_context,
+            ),
         )
 
     if "interview" in lower_message:
@@ -353,7 +386,7 @@ def _fallback_chat_reply(message, analysis):
                 f"Revise the missing skills: {', '.join(missing[:3]) if missing else 'role fundamentals and project depth'}.",
                 "Do mock questions every day and write better answers after each attempt.",
             ],
-            "The goal is to sound practical, not memorized.",
+            _closing_with_source("The goal is to sound practical, not memorized.", rag_context),
         )
 
     strengths = ", ".join(detected[:5]) if detected else "your current profile details"
@@ -363,7 +396,7 @@ def _fallback_chat_reply(message, analysis):
         f"Your current signals: {strengths}.\n"
         f"Next improvement areas: {next_skills}.\n\n"
         "Best next move: build one role-focused project, update your resume with measurable outcomes, "
-        "and practice explaining your project decisions clearly."
+        f"and practice explaining your project decisions clearly.\n\n{_source_line(rag_context)}"
     )
 
 
@@ -371,6 +404,30 @@ def _format_lines(title, items, closing):
     clean_items = [str(item).strip() for item in items if str(item).strip()]
     bullet_text = "\n".join(f"- {item}" for item in clean_items)
     return f"{title}\n\n{bullet_text}\n\n{closing}"
+
+
+def _closing_with_source(closing, rag_context):
+    source_line = _source_line(rag_context)
+    if not source_line:
+        return closing
+    return f"{closing}\n\n{source_line}"
+
+
+def _source_line(rag_context):
+    if not rag_context:
+        return ""
+    titles = ", ".join(item["title"] for item in rag_context[:2])
+    return f"Grounded with: {titles}."
+
+
+def _rag_sources(rag_context):
+    return [
+        {
+            "title": item["title"],
+            "category": item["category"],
+        }
+        for item in rag_context[:5]
+    ]
 
 
 def _format_gemini_error(status_code, detail):

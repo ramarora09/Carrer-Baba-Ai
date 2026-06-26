@@ -15,9 +15,11 @@ from dotenv import load_dotenv
 
 try:
     from career_baba_ai.utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_chat_reply, generate_career_intelligence
+    from career_baba_ai.utils.rag_engine import rag_status, retrieve_career_context
     from career_baba_ai.utils.resume_parser import extract_text_from_pdf
 except ModuleNotFoundError:
     from utils.gemini_client import gemini_configured, gemini_enhancement_enabled, generate_career_chat_reply, generate_career_intelligence
+    from utils.rag_engine import rag_status, retrieve_career_context
     from utils.resume_parser import extract_text_from_pdf
 
 
@@ -272,6 +274,21 @@ async def career_chat(request: Request):
     return JSONResponse({"reply": reply, "ai_used": ai_used})
 
 
+@app.post("/api/rag/search")
+@app.post("/api/rag/search/")
+async def rag_search(request: Request):
+    if not _require_user(request):
+        return JSONResponse({"error": "Authentication required."}, status_code=401)
+
+    payload = await request.json()
+    query = str(payload.get("query", "")).strip()
+    profile = payload.get("profile") or {}
+    if not query:
+        return JSONResponse({"error": "Please enter a search query."}, status_code=400)
+
+    return JSONResponse({"matches": retrieve_career_context(query=query, profile=profile, top_k=5)})
+
+
 @app.post("/api/resume")
 @app.post("/api/resume/")
 async def analyze_resume(
@@ -332,10 +349,11 @@ async def health():
     app_env = os.path.join(BASE_DIR, ".env")
     return {
         "status": "ok",
-        "local_ai_engine": "enabled",
+        "career_signal_engine": "enabled",
         "gemini_configured": gemini_configured(),
         "gemini_enhancement_enabled": gemini_enhancement_enabled(),
         "model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
+        "rag": rag_status(),
         "env_files_checked": [root_env, app_env],
         "env_file_found": os.path.exists(root_env) or os.path.exists(app_env),
     }

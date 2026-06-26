@@ -1,0 +1,98 @@
+[
+  {
+    "id": "data-analyst-roadmap",
+    "title": "Data Analyst Roadmap",
+    "category": "role_roadmap",
+    "roles": ["Data Analyst", "Business Analyst"],
+    "skills": ["sql", "excel", "statistics", "data visualization", "power bi", "tableau", "communication"],
+    "content": "A data analyst should learn SQL for querying data, Excel or spreadsheets for quick analysis, statistics for interpreting trends, and a BI tool such as Power BI or Tableau for dashboards. Strong projects include sales dashboards, customer churn analysis, hiring trend analysis, and cohort analysis. Recruiters look for clear business questions, clean charts, measurable insights, and concise communication."
+  },
+  {
+    "id": "data-scientist-roadmap",
+    "title": "Data Scientist Roadmap",
+    "category": "role_roadmap",
+    "roles": ["Data Scientist"],
+    "skills": ["python", "sql", "statistics", "machine learning", "data visualization", "model evaluation"],
+    "content": "A data scientist needs Python, SQL, statistics, machine learning, data cleaning, feature engineering, model evaluation, and storytelling. Good portfolio projects include churn prediction, demand forecasting, recommendation systems, and fraud detection. The project should show problem framing, baseline model, evaluation metrics, error analysis, and business interpretation."
+  },
+  {
+    "id": "aiml-engineer-roadmap",
+    "title": "AI/ML Engineer Roadmap",
+    "category": "role_roadmap",
+    "roles": ["AI/ML Engineer", "Machine Learning Engineer"],
+    "skills": ["python", "machine learning", "deep learning", "nlp", "fastapi", "docker", "cloud"],
+    "content": "An AI/ML engineer should combine model-building skills with deployment skills. Learn Python, supervised learning, deep learning basics, NLP or computer vision, FastAPI, Docker, cloud deployment, monitoring, and model evaluation. Strong projects include deployed resume screening, chatbot with RAG, image classifier API, and recommendation engine with explainable outputs."
+  },
+  {
+    "id": "full-stack-roadmap",
+    "title": "Full Stack Developer Roadmap",
+    "category": "role_roadmap",
+    "roles": ["Full Stack Developer", "Frontend Developer", "Backend Developer"],
+    "skills": ["html/css", "javascript", "react", "node", "fastapi", "sql", "api", "deployment"],
+    "content": "A full stack developer should learn HTML, CSS, JavaScript, React, backend APIs, authentication, databases, deployment, and debugging. Good projects include job trackers, LMS dashboards, SaaS admin panels, ecommerce apps, and AI-powered tools. Employers value clean UI, working CRUD flows, authentication, database design, and deployed demos."
+  },
+  {
+    "id": "cybersecurity-roadmap",
+    "title": "Cybersecurity Analyst Roadmap",
+    "category": "role_roadmap",
+    "roles": ["Cybersecurity Analyst", "SOC Analyst"],
+    "skills": ["networking", "linux", "owasp", "siem", "incident response", "cloud security"],
+    "content": "A cybersecurity analyst should learn networking, Linux, security fundamentals, OWASP Top 10, log analysis, SIEM basics, incident response, and cloud security. Portfolio projects can include a home SOC lab, web app vulnerability report, log analysis dashboard, and phishing awareness toolkit. Reports should explain risk, evidence, impact, and remediation."
+  },
+  {
+    "id": "resume-impact",
+    "title": "Resume Impact Writing",
+    "category": "resume",
+    "roles": ["All"],
+    "skills": ["resume", "communication"],
+    "content": "Strong resumes use action, technology, and measurable outcome. Replace vague lines such as 'worked on a project' with bullets like 'Built a FastAPI resume analyzer that extracted skills from PDFs and generated role recommendations, reducing manual review time by 60% in tests.' Add metrics, tools, links, and role-specific keywords."
+  },
+  {
+    "id": "internship-strategy",
+    "title": "Internship Strategy",
+    "category": "job_search",
+    "roles": ["All"],
+    "skills": ["internship", "portfolio", "networking", "interview"],
+    "content": "For internships, users should focus on one target role, build two proof-of-work projects, write a one-page resume, create a GitHub or portfolio page, and apply consistently. A strong weekly plan is 5 focused applications, 2 networking messages, 3 interview practice sessions, and one visible project improvement."
+  },
+  {
+    "id": "interview-preparation",
+    "title": "Interview Preparation",
+    "category": "interview",
+    "roles": ["All"],
+    "skills": ["interview", "communication", "projects"],
+    "content": "Interview preparation should cover self-introduction, role fundamentals, project explanation, behavioral answers, and practical problem solving. Users should prepare STAR stories, explain tradeoffs in projects, discuss failures honestly, and connect every answer to the target role."
+  },
+  {
+    "id": "rag-project-guidance",
+    "title": "RAG Project Guidance",
+    "category": "project",
+    "roles": ["AI/ML Engineer", "Data Scientist", "Full Stack Developer"],
+    "skills": ["rag", "llm", "embeddings", "vector search", "fastapi", "gemini"],
+    "content": "A strong RAG project includes a knowledge base, document chunking, embeddings or vector scoring, top-k retrieval, prompt grounding, source citations, fallback behavior, and evaluation questions. It should avoid sending raw user questions directly to an LLM without retrieved context. Good examples are career advisor RAG, college policy assistant, legal FAQ assistant, and medical appointment helper with safe disclaimers."
+  },
+  {
+    "id": "learning-roadmap-method",
+    "title": "Learning Roadmap Method",
+    "category": "learning",
+    "roles": ["All"],
+    "skills": ["roadmap", "learning", "projects"],
+    "content": "A practical roadmap should be split into foundation, applied project, portfolio polish, and job preparation. Each phase should have a short duration, concrete actions, and a visible output. Learning should end in artifacts such as GitHub commits, dashboards, deployed apps, notebooks, case studies, or interview notes."
+  },
+  {
+    "id": "market-guidance",
+    "title": "Career Market Guidance",
+    "category": "market",
+    "roles": ["All"],
+    "skills": ["market demand", "job search", "skills"],
+    "content": "Market demand is strongest when a candidate can prove role-specific skills with projects and clear communication. Freshers should not only list certificates; they should show deployed apps, dashboards, notebooks, reports, and measurable outcomes. Hiring signals include practical tools, problem solving, collaboration, and ability to explain decisions."
+  },
+  {
+    "id": "portfolio-quality",
+    "title": "Portfolio Quality Checklist",
+    "category": "portfolio",
+    "roles": ["All"],
+    "skills": ["portfolio", "github", "deployment", "projects"],
+    "content": "A portfolio project should have a clear problem statement, live demo or screenshots, GitHub repository, README, technology stack, result metrics, limitations, and next improvements. For AI projects, include data source, model or retrieval method, evaluation approach, and examples of good and bad outputs."
+  }
+]

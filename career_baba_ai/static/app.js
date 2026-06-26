@@ -29,6 +29,20 @@ function scoreBar(score = 0) {
   return `<div class="score-bar"><span style="width:${Math.min(score || 0, 100)}%"></span></div>`;
 }
 
+function ragSources(items = []) {
+  if (!items.length) return "";
+  return `
+    <section class="report-card">
+      <h3>Knowledge Sources</h3>
+      <div class="pill-row">
+        ${items
+          .map((item) => `<span class="pill">${item.title} · ${(item.category || "knowledge").replace(/_/g, " ")}</span>`)
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
 function escapeHtml(value = "") {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -223,6 +237,10 @@ function renderReport(data, aiUsed, notice) {
             : ""
         }
       </section>
+    </div>
+
+    <div class="report-grid" style="margin-top: 18px;">
+      ${ragSources(data.rag_sources || [])}
     </div>
   `;
 

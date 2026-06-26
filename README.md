@@ -1,23 +1,46 @@
 # Career Baba AI
 
-Career Baba AI is a Python AI/ML-style web application with a professional custom UI and a local career intelligence engine.
+Career Baba AI is a RAG-powered LLM career guidance platform built with FastAPI, Gemini, and a custom AI/ML career scoring layer. It helps students, freshers, and early-career professionals get personalized career direction from their profile or resume.
 
-The core recommendation flow no longer depends on Gemini. It uses local skill extraction, TF-IDF-style role vector matching, readiness scoring, skill-gap analysis, and dynamic roadmap/project generation from the user's profile and resume text. Gemini can still be enabled as an optional language enhancement layer.
+The project is not just a Gemini API wrapper. It combines:
+
+- A career knowledge base
+- TF-IDF vector retrieval for RAG grounding
+- Resume/profile skill extraction
+- Role matching and readiness scoring
+- Gemini-powered final answer generation
+- A professional web UI with report generation and career chat
 
 ## Features
 
-- Professional web UI served by FastAPI
-- Local skill extraction from profile and resume text
-- TF-IDF-style role vector matching
-- Local readiness and skill-gap scoring
-- Dynamic learning roadmap generation
-- Dynamic portfolio project recommendations
-- Resume feedback from local profile signals
-- Market demand scoring from role profiles and skill overlap
-- Optional Gemini enhancement for rewritten report language
-- Optional Gemini Google Search grounding for fresher market information
+- RAG-powered AI career chatbot
+- AI Career Intelligence Report
 - PDF resume upload or resume text paste
-- Works without a Gemini API key
+- Profile-based role recommendation
+- Skill-gap and readiness scoring
+- Market demand guidance
+- Personalized learning roadmap
+- Portfolio project recommendations
+- Resume feedback
+- Internal RAG source tracking
+- Works with Gemini for polished LLM responses
+- Falls back to knowledge-grounded guidance if Gemini is unavailable
+
+## Architecture
+
+```text
+User profile / resume / chat question
+        ↓
+Profile and resume signal analysis
+        ↓
+Career knowledge base retrieval
+        ↓
+RAG context + profile analysis
+        ↓
+Gemini LLM generation
+        ↓
+Personalized career report or chatbot reply
+```
 
 ## Run Locally
 
@@ -33,24 +56,17 @@ Open:
 http://localhost:8000
 ```
 
-## Optional Gemini Enhancement
+## Gemini Setup
 
-The app works without Gemini. To let Gemini rewrite or enrich the local model's output, edit the root `.env` file:
+Create a `.env` file in the project root:
 
 ```bash
 GEMINI_API_KEY=paste_your_real_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
 ENABLE_GEMINI_ENHANCEMENT=true
 ENABLE_GEMINI_SEARCH=false
+AUTH_SECRET=change_this_to_a_long_random_secret
 ```
-
-The file to change is:
-
-```text
-Career-Baba-Ai/.env
-```
-
-Do not change `.env.example`; it is only a template.
 
 Get a Gemini key:
 
@@ -58,45 +74,44 @@ Get a Gemini key:
 https://aistudio.google.com/app/apikey
 ```
 
-Recommended default:
-
-```bash
-GEMINI_MODEL=gemini-2.5-flash-lite
-```
-
-Optional live web grounding:
-
-```bash
-ENABLE_GEMINI_SEARCH=true
-```
-
-Keep Gemini enhancement and search grounding off for a fully local AI/ML-style project. Turn them on only when you want hosted LLM language enhancement or fresher sourced market insights.
-
 ## Project Structure
 
 ```text
 career_baba_ai/
-  app.py                  # FastAPI web app and API routes
+  app.py                    # FastAPI web app and API routes
+  knowledge/
+    career_knowledge.json   # RAG knowledge base
   templates/
     auth.html
-    index.html            # Professional UI
+    index.html              # Professional UI
   static/
     styles.css
     app.js
   utils/
-    local_ml_engine.py    # Local AI/ML-style skill extraction, role ranking, and scoring
-    gemini_client.py      # Optional Gemini enhancement wrapper
-    resume_parser.py      # PDF text extraction
+    rag_engine.py           # TF-IDF vector retrieval for RAG
+    local_ml_engine.py      # Skill extraction, role ranking, scoring
+    gemini_client.py        # Gemini + RAG prompt orchestration
+    resume_parser.py        # PDF text extraction
+```
+
+## Useful API Routes
+
+```text
+POST /api/analyze       Generate AI career report
+POST /api/resume        Analyze uploaded/pasted resume
+POST /api/chat          Ask the RAG career advisor
+POST /api/rag/search    Inspect retrieved knowledge chunks
+GET  /api/health        Check app, Gemini, and RAG status
 ```
 
 ## Deployment
 
-This is no longer a Next.js project. Deploy it as a Python web app on:
+Deploy as a Python web app:
 
-- Render
+- Google Cloud Run
+- Render paid instance
 - Railway
 - Fly.io
-- Google Cloud Run
 - Azure App Service
 
 Typical start command:
@@ -105,8 +120,4 @@ Typical start command:
 uvicorn career_baba_ai.app:app --host 0.0.0.0 --port $PORT
 ```
 
-## Notes
-
-- The local engine is the main intelligence layer.
-- Gemini is optional, not required.
-- The role profiles are currently embedded in Python. For a stronger ML project, move them into a dataset and add evaluation/training notebooks.
+For a public product, prefer Google Cloud Run with minimum instances enabled or a paid hosting plan so users do not see cold-start loading screens.
